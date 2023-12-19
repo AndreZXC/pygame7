@@ -4,7 +4,7 @@ import os
 
 FPS = 50
 pygame.init()
-size = WIDTH, HEIGHT = 800, 600
+size = width, height = 800, 600
 screen = pygame.display.set_mode(size)
 clock = pygame.time.Clock()
 
@@ -29,7 +29,7 @@ def start_screen():
                   "Если в правилах несколько строк,",
                   "приходится выводить их построчно"]
 
-    fon = pygame.transform.scale(load_image('fon.jpg'), (WIDTH, HEIGHT))
+    fon = pygame.transform.scale(load_image('fon.jpg'), (width, height))
     screen.blit(fon, (0, 0))
     font = pygame.font.Font(None, 50)
     text_coord = 50
@@ -122,7 +122,25 @@ def generate_level(level):
 
 
 player, level_x, level_y = generate_level(load_level(f'{input("level: ")}.txt'))
-screen = pygame.display.set_mode((tile_width * (level_x + 1), tile_height * (level_y + 1)))
+size = width, height = tile_width * (level_x + 1), tile_height * (level_y + 1)
+screen = pygame.display.set_mode(size)
+
+
+class Camera:
+    def __init__(self):
+        self.dx = 0
+        self.dy = 0
+
+    def apply(self, obj):
+        obj.rect.x += self.dx
+        obj.rect.y += self.dy
+
+    def update(self, target):
+        self.dx = -(target.rect.x + target.rect.w // 2 - width // 2)
+        self.dy = -(target.rect.y + target.rect.h // 2 - height // 2)
+
+
+camera = Camera()
 plaing = True
 while plaing:
     for event in pygame.event.get():
@@ -139,6 +157,10 @@ while plaing:
                 player_group.update('right')
     pygame.display.flip()
     screen.fill((0, 0, 0))
+    camera.update(player)
+    for sprite in all_sprites:
+        camera.apply(sprite)
+    clock.tick(FPS)
     tiles_group.draw(screen)
     player_group.draw(screen)
 
